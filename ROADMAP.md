@@ -58,9 +58,8 @@ tráfego dão o mesmo investimento, leads, agendamentos e vendas.
 Mesmo caminho do Painel API: conta Vercel profissional `quarta-vias-projects`,
 deploy **manual** pela CLI.
 
-- Repositório: `igor-cruz-99/apl-pharus-dashboard` — **a criar** (backup e
-  histórico). Pode ser privado: o bloqueio do plano Hobby a autor externo só
-  afeta o deploy automático pelo Git, e aqui o deploy é pela CLI.
+- Repositório: `igor-cruz-99/apl-pharus-dashboard` (público). Serve de backup
+  e histórico; o deploy não depende dele.
 - Projeto Vercel: `quarta-vias-projects/apl-pharus-dashboard` — **a criar** no
   primeiro `npx vercel --scope quarta-vias-projects`.
 - Variáveis em Production e Preview (mesmas do SE EMP): `SUPABASE_URL`,
