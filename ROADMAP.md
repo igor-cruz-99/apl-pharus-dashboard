@@ -55,24 +55,23 @@ tráfego dão o mesmo investimento, leads, agendamentos e vendas.
 
 ## Publicação
 
-- Repositório: `igor-cruz-99/se-emp-dashboard` (**público**, mesma razão do WEP:
-  na conta Hobby, repo privado bloqueia deploy quando o autor do commit não é
-  membro da conta Vercel).
-- Projeto Vercel: `igorcruz-2142s-projects/se-emp-dashboard`.
-- URL: <https://se-emp-dashboard.vercel.app>
-- Variáveis em Production e Preview: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE`,
-  `SUPABASE_AUTH_URL`, `SUPABASE_AUTH_ANON_KEY`, `VITE_SUPABASE_AUTH_URL`,
-  `VITE_SUPABASE_AUTH_ANON_KEY`, `DASHBOARD_ALLOWED_DOMAINS`.
-  **`DEV_SKIP_AUTH` não está lá e não deve ir.**
+Mesmo caminho do Painel API: conta Vercel profissional `quarta-vias-projects`,
+deploy **manual** pela CLI.
 
-⚠️ **O deploy NÃO é automático.** `vercel git connect` falhou com "You need to
-add a Login Connection to your GitHub account first" — a conta Vercel não tem
-o GitHub ligado como método de login. Enquanto isso não for feito no painel da
-Vercel, `git push` publica no GitHub mas **não republica o site**. Para publicar
-uma versão nova:
+- Repositório: `igor-cruz-99/apl-pharus-dashboard` — **a criar** (backup e
+  histórico). Pode ser privado: o bloqueio do plano Hobby a autor externo só
+  afeta o deploy automático pelo Git, e aqui o deploy é pela CLI.
+- Projeto Vercel: `quarta-vias-projects/apl-pharus-dashboard` — **a criar** no
+  primeiro `npx vercel --scope quarta-vias-projects`.
+- Variáveis em Production e Preview (mesmas do SE EMP): `SUPABASE_URL`,
+  `SUPABASE_SERVICE_ROLE`, `SUPABASE_AUTH_URL`, `SUPABASE_AUTH_ANON_KEY`,
+  `VITE_SUPABASE_AUTH_URL`, `VITE_SUPABASE_AUTH_ANON_KEY`,
+  `DASHBOARD_ALLOWED_DOMAINS`. **`DEV_SKIP_AUTH` não vai.**
+
+⚠️ `git push` **não** republica o site. Para publicar uma versão nova:
 
 ```
-npm run build && npx vercel --prod
+npm run build && npx vercel --prod --scope quarta-vias-projects
 ```
 
 ## Armadilhas já encontradas (não repetir)
