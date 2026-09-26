@@ -5,7 +5,7 @@ import { Login } from './pages/Login'
 
 /** Decide Login × Dashboard pela sessão. Respeita o bypass de desenvolvimento. */
 export function App() {
-  const { session, loading } = useAuth()
+  const { session, loading, erro } = useAuth()
 
   if (DEV_SKIP_AUTH) return <Dashboard />
 
@@ -17,5 +17,5 @@ export function App() {
     )
   }
 
-  return session ? <Dashboard /> : <Login />
+  return session ? <Dashboard /> : <Login erroInicial={erro} />
 }

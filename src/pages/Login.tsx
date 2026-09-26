@@ -2,11 +2,11 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { supabaseAuth, isAuthConfigured } from '../lib/supabase'
 
-export function Login() {
+export function Login({ erroInicial = null }: { erroInicial?: string | null }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(erroInicial)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()

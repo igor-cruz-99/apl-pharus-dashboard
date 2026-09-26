@@ -18,7 +18,9 @@ export const supabaseAuth =
           autoRefreshToken: true,
           // PKCE: retorna ?code= de uso único em vez do token na URL.
           flowType: 'pkce',
-          detectSessionInUrl: true,
+          // A troca do ?code= é feita à mão no useAuth: a automática engole o
+          // erro, e o login com Google "não avançava" sem dizer por quê.
+          detectSessionInUrl: false,
         },
       })
     : null
