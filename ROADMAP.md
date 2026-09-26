@@ -11,9 +11,17 @@
       ALPES 5, a cada 30 min (`sql/apl/02`). Espelho vazio de propósito até a
       campanha começar a rodar (27/09/2026). Conferir no dia seguinte:
       `select campanha, min(data), max(data), sum(gasto) from mkt_apl.ads group by 1;`
-- [ ] **Comercial** — de onde vêm agendamentos e vendas do APL, e como
-      separar do SE.
-- [ ] **RPCs `apl_*`** no lugar das `se_*` que o painel chama hoje.
+- [x] **Comercial** (`sql/apl/04_funil.sql`) — cadastro APL cruzado por e-mail
+      ou 8 últimos dígitos do telefone com `crm_leads` → `crm_meetings`
+      (agendamentos) e `contratos_pharus` (vendas assinadas, fora do modo
+      teste). Só conta o que aconteceu no dia do cadastro ou depois.
+- [x] **RPCs `apl_*`** (kpis, série, tráfego, ciclo, macro, metas, perfil).
+- [ ] **Confirmar com o gestor**: MQL (hoje renda ≥ R$ 20 mil, igual ao SE) e
+      valor da venda (hoje à vista; se vazio, parcelado). Mudam em
+      `mkt_apl.eh_mql()` e em `mkt_apl.vw_vendas`.
+- [ ] **Conferir UTM × nome no anúncio** (conferência 3 do 04): se a
+      `utm_medium`/`utm_content` não for o nome do conjunto/anúncio, a tabela de
+      tráfego não liga lead ao anúncio.
 - [x] **Primeiro deploy** — <https://apl-pharus-dashboard.vercel.app> (26/09/2026).
       Login com Google funcionando. Ainda mostra os números do SE: as RPCs
       `apl_*` não existem.
