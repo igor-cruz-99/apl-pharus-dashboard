@@ -15,7 +15,8 @@
       separar do SE.
 - [ ] **RPCs `apl_*`** no lugar das `se_*` que o painel chama hoje.
 - [x] **Primeiro deploy** — <https://apl-pharus-dashboard.vercel.app> (26/09/2026).
-      Ainda mostra os números do SE: as RPCs `apl_*` não existem.
+      Login com Google funcionando. Ainda mostra os números do SE: as RPCs
+      `apl_*` não existem.
 
 ---
 
@@ -84,6 +85,15 @@ deploy **manual** pela CLI.
   e histórico; o deploy não depende dele.
 - Projeto Vercel: `quarta-vias-projects/apl-pharus-dashboard`.
 - URL: <https://apl-pharus-dashboard.vercel.app>
+- Login com Google: `https://apl-pharus-dashboard.vercel.app` está em
+  **Authentication → URL Configuration → Redirect URLs** do projeto de auth.
+  Sem isso o Google devolve para o Site URL (outro sistema da Quarta Via).
+  **Não mexer no Site URL** — é o padrão desse outro sistema.
+- `Invalid API key` no login = a anon key não é do mesmo projeto da
+  `VITE_SUPABASE_AUTH_URL`. O código antes de `.supabase.co` tem de bater com
+  o projeto de onde a chave foi copiada.
+- Variáveis `VITE_*` entram no site no BUILD: mudou na Vercel, tem de rodar
+  `npx vercel --prod` de novo.
 - No Windows, `npm`/`npx` são bloqueados pela política do PowerShell: usar
   `npm.cmd` / `npx.cmd`, e um comando por linha (sem `&&`).
 - Variáveis em Production e Preview (mesmas do SE EMP): `SUPABASE_URL`,
