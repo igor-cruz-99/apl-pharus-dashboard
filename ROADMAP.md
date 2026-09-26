@@ -78,11 +78,11 @@ tráfego dão o mesmo investimento, leads, agendamentos e vendas.
 
 ## Publicação
 
-Mesmo caminho do Painel API: conta Vercel profissional `quarta-vias-projects`,
-deploy **manual** pela CLI.
+Conta Vercel profissional `quarta-vias-projects`, **deploy automático pelo
+Git** desde 26/09/2026: todo push na `main` publica em produção (1–2 min).
 
-- Repositório: `igor-cruz-99/apl-pharus-dashboard` (público). Serve de backup
-  e histórico; o deploy não depende dele.
+- Repositório: `igor-cruz-99/apl-pharus-dashboard` (público). Push na `main`
+  = deploy em produção.
 - Projeto Vercel: `quarta-vias-projects/apl-pharus-dashboard`.
 - URL: <https://apl-pharus-dashboard.vercel.app>
 - Login com Google: `https://apl-pharus-dashboard.vercel.app` está em
@@ -92,8 +92,8 @@ deploy **manual** pela CLI.
 - `Invalid API key` no login = a anon key não é do mesmo projeto da
   `VITE_SUPABASE_AUTH_URL`. O código antes de `.supabase.co` tem de bater com
   o projeto de onde a chave foi copiada.
-- Variáveis `VITE_*` entram no site no BUILD: mudou na Vercel, tem de rodar
-  `npx vercel --prod` de novo.
+- Variáveis `VITE_*` entram no site no BUILD: mudou na Vercel, tem de
+  republicar (Deployments → ⋯ → Redeploy, ou um push).
 - No Windows, `npm`/`npx` são bloqueados pela política do PowerShell: usar
   `npm.cmd` / `npx.cmd`, e um comando por linha (sem `&&`).
 - Variáveis em Production e Preview (mesmas do SE EMP): `SUPABASE_URL`,
@@ -101,11 +101,16 @@ deploy **manual** pela CLI.
   `VITE_SUPABASE_AUTH_URL`, `VITE_SUPABASE_AUTH_ANON_KEY`,
   `DASHBOARD_ALLOWED_DOMAINS`. **`DEV_SKIP_AUTH` não vai.**
 
-⚠️ `git push` **não** republica o site. Para publicar uma versão nova:
+Deploy manual (só se o Git estiver fora do ar):
 
 ```
-npm run build && npx vercel --prod --scope quarta-vias-projects
+npx vercel --prod --scope quarta-vias-projects
 ```
+
+Como o Git foi ligado (para repetir em outro projeto): GitHub em
+**Account Settings → Authentication → Login Connections** da conta Vercel
+`ferramentas`; depois **Project → Settings → Git → Connect**. Se o repositório
+não aparecer na lista, **Adjust GitHub App Permissions** e incluir o repo.
 
 ## Armadilhas já encontradas (não repetir)
 
