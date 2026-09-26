@@ -25,17 +25,13 @@ const AUTH_ANON = process.env.SUPABASE_AUTH_ANON_KEY ?? process.env.VITE_SUPABAS
 
 /** Operações permitidas — impede chamar RPC arbitrária pela API. */
 const ALLOWED_RPC = new Set([
-  'se_kpis',
-  'se_serie_diaria',
-  'se_origem',
-  'se_renda',
-  'se_trafego',
-  'se_ciclo_vendas',
-  'se_perfil_lead',
-  'se_formularios',
-  'se_macro',
-  'se_metas',
+  'apl_kpis',
+  'apl_serie_diaria',
+  'apl_trafego',
+  'apl_ciclo_vendas',
   'apl_perfil',
+  'apl_macro',
+  'apl_metas',
 ])
 
 interface Req {

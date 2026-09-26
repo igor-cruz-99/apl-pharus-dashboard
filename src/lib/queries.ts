@@ -35,45 +35,25 @@ async function chamar<T>(fn: string, params: Record<string, unknown> = {}): Prom
   return corpo.data ?? []
 }
 
-export async function fetchKpis(
-  inicio: string,
-  fim: string,
-  origens: string[] | null,
-): Promise<Kpis | null> {
-  const linhas = await chamar<Kpis>('se_kpis', {
-    p_ini: inicio,
-    p_fim: fim,
-    p_origens: origens,
-  })
+/**
+ * Todas as leituras são das funções do APL (sql/apl/04_funil.sql), que devolvem
+ * o mesmo formato das do SE. Só recebem período: o APL não tem filtro de origem.
+ */
+export async function fetchKpis(inicio: string, fim: string): Promise<Kpis | null> {
+  const linhas = await chamar<Kpis>('apl_kpis', { p_ini: inicio, p_fim: fim })
   return linhas[0] ?? null
 }
 
-export async function fetchSerie(
-  inicio: string,
-  fim: string,
-  origens: string[] | null,
-): Promise<DiaSerie[]> {
-  return chamar<DiaSerie>('se_serie_diaria', {
-    p_ini: inicio,
-    p_fim: fim,
-    p_origens: origens,
-  })
+export async function fetchSerie(inicio: string, fim: string): Promise<DiaSerie[]> {
+  return chamar<DiaSerie>('apl_serie_diaria', { p_ini: inicio, p_fim: fim })
 }
 
-export async function fetchTrafego(
-  inicio: string,
-  fim: string,
-  origens: string[] | null,
-): Promise<TrafegoLinha[]> {
-  return chamar<TrafegoLinha>('se_trafego', { p_ini: inicio, p_fim: fim, p_origens: origens })
+export async function fetchTrafego(inicio: string, fim: string): Promise<TrafegoLinha[]> {
+  return chamar<TrafegoLinha>('apl_trafego', { p_ini: inicio, p_fim: fim })
 }
 
-export async function fetchCiclo(
-  inicio: string,
-  fim: string,
-  origens: string[] | null,
-): Promise<CicloLinha[]> {
-  return chamar<CicloLinha>('se_ciclo_vendas', { p_ini: inicio, p_fim: fim, p_origens: origens })
+export async function fetchCiclo(inicio: string, fim: string): Promise<CicloLinha[]> {
+  return chamar<CicloLinha>('apl_ciclo_vendas', { p_ini: inicio, p_fim: fim })
 }
 
 /** Respostas do formulário do APL — sql/apl/03_perfil.sql. Sem filtro de origem. */
@@ -83,10 +63,10 @@ export async function fetchPerfil(inicio: string, fim: string): Promise<PerfilLi
 
 /**
  * A matriz macro NÃO recebe período: mostra sempre o ano corrente,
- * independente do filtro da página. Ver sql/23_macro.sql.
+ * independente do filtro da página. Ver mkt_apl.fn_macro (sql/apl/04).
  */
 export async function fetchMacro(): Promise<MacroLinha[]> {
-  return chamar<MacroLinha>('se_macro', {})
+  return chamar<MacroLinha>('apl_macro', {})
 }
 
 /**
@@ -95,7 +75,7 @@ export async function fetchMacro(): Promise<MacroLinha[]> {
  */
 export async function fetchMetas(): Promise<Record<string, Meta>> {
   try {
-    const linhas = await chamar<Meta>('se_metas')
+    const linhas = await chamar<Meta>('apl_metas')
     return Object.fromEntries(linhas.map((m) => [m.chave, m]))
   } catch {
     return {}

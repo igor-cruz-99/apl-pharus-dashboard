@@ -35,10 +35,10 @@ export function useDashboardData(filtros: Filtros) {
     try {
       const [kpis, serie, trafego, ciclo, perfil, metas] =
         await Promise.all([
-        fetchKpis(filtros.inicio, filtros.fim, filtros.origens),
-        fetchSerie(filtros.inicio, filtros.fim, filtros.origens),
-        fetchTrafego(filtros.inicio, filtros.fim, filtros.origens),
-        fetchCiclo(filtros.inicio, filtros.fim, filtros.origens),
+        fetchKpis(filtros.inicio, filtros.fim),
+        fetchSerie(filtros.inicio, filtros.fim),
+        fetchTrafego(filtros.inicio, filtros.fim),
+        fetchCiclo(filtros.inicio, filtros.fim),
         fetchPerfil(filtros.inicio, filtros.fim),
         fetchMetas(),
       ])
@@ -49,7 +49,7 @@ export function useDashboardData(filtros: Filtros) {
     } finally {
       setCarregando(false)
     }
-  }, [filtros.inicio, filtros.fim, filtros.origens])
+  }, [filtros.inicio, filtros.fim])
 
   useEffect(() => {
     void carregar()

@@ -16,14 +16,6 @@ import { formatBRL, formatBRLCurto, formatInt, formatPct } from '../utils/format
 import { comImpostoMacro, comImpostoPainel } from '../utils/impostoMeta'
 import type { Filtros } from '../types'
 
-/**
- * Data em que o funil (agendamento/venda) passa a existir de verdade.
- * Antes disso: a Bitrix parou em 26/06 e o CRM novo só começou em 01/08 —
- * julho inteiro não tem registro em sistema nenhum. Sem este aviso na tela,
- * um período que cruze julho parece colapso da operação em vez de lacuna.
- */
-const FUNIL_CONFIAVEL_DE = '2026-08-01'
-
 export function Dashboard() {
   // Abre no mês corrente; os atalhos 30D/7D/Ontem/Hoje ficam sem seleção
   // até alguém clicar, porque nenhum deles corresponde a esse recorte.
@@ -48,8 +40,6 @@ export function Dashboard() {
   )
 
   const { kpis: k, serie, trafego, ciclo, perfil, metas } = dados
-
-  const avisoLacuna = filtros.inicio < FUNIL_CONFIAVEL_DE
 
   /** Um dia só selecionado: o clique numa barra dos gráficos diários recorta aqui. */
   const diaUnico = filtros.inicio === filtros.fim ? filtros.inicio : null
@@ -110,15 +100,6 @@ export function Dashboard() {
 
         {erro && (
           <Panel className="mb-5 border-bad/40 px-5 py-4 text-sm text-bad">{erro}</Panel>
-        )}
-
-        {avisoLacuna && (
-          <Panel className="mb-5 border-warn/30 px-5 py-3 text-xs text-warn/90">
-            <strong className="font-semibold">Atenção:</strong> agendamentos, calls e vendas só
-            existem a partir de 01/08/2026. A Bitrix parou em 26/06 e o CRM novo começou em 01/08 —
-            julho não foi registrado em sistema nenhum. Investimento, leads e CPL estão íntegros no
-            período todo.
-          </Panel>
         )}
 
         <div className="flex gap-6">
