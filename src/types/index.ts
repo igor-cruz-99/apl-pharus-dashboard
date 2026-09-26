@@ -121,15 +121,13 @@ export interface MacroLinha {
 }
 
 export interface PerfilLinha {
-  /**
-   * 'dia_semana' (0=domingo..6=sábado) · 'hora' (0..23) · 'sem_hora'
-   * 'aporte' (ordem = escala do menor para o maior) · 'profissao' (ordem = ranking)
-   */
-  tipo: 'dia_semana' | 'hora' | 'sem_hora' | 'aporte' | 'profissao'
-  ordem: number
-  /** Só em 'aporte' e 'profissao'. Nos outros o nome sai de `ordem`. */
-  rotulo: string | null
+  /** coluna do formulário (renda, capital, …) ou 'dia_semana' / 'hora' */
+  pergunta: string
+  /** texto da opção; em dia_semana é 0–6 (domingo = 0), em hora é 0–23 */
+  resposta: string
   leads: number
+  /** quem respondeu a pergunta — base do %. Na múltipla, os % somam > 100 */
+  respondentes: number
 }
 
 /** Direção diz para que lado o número é bom — CPL menor, conversão maior. */

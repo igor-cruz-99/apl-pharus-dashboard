@@ -76,12 +76,9 @@ export async function fetchCiclo(
   return chamar<CicloLinha>('se_ciclo_vendas', { p_ini: inicio, p_fim: fim, p_origens: origens })
 }
 
-export async function fetchPerfil(
-  inicio: string,
-  fim: string,
-  origens: string[] | null,
-): Promise<PerfilLinha[]> {
-  return chamar<PerfilLinha>('se_perfil_lead', { p_ini: inicio, p_fim: fim, p_origens: origens })
+/** Respostas do formulário do APL — sql/apl/03_perfil.sql. Sem filtro de origem. */
+export async function fetchPerfil(inicio: string, fim: string): Promise<PerfilLinha[]> {
+  return chamar<PerfilLinha>('apl_perfil', { p_ini: inicio, p_fim: fim })
 }
 
 /**

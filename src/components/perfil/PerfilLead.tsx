@@ -10,41 +10,29 @@ import {
   YAxis,
 } from 'recharts'
 import { Panel } from '../ui/Panel'
+import { Sanfona } from '../ui/Sanfona'
 import { RendaDonut } from '../origem/RendaDonut'
+import { BarrasRespostas, type Resposta } from './BarrasRespostas'
 import { formatInt } from '../../utils/format'
 import { tooltipProps } from '../../utils/chartTheme'
-import type { PerfilLinha } from '../../types'
+import { curtoFaixa, ordemFaixa } from '../../utils/faixa'
+import type { PerfilLinha, RendaLinha } from '../../types'
 
 /**
- * Perfil do lead — quando ele chega e quem ele é.
- *   Esquerda (1/3): leads por dia da semana · aporte mensal declarado.
- *   Direita  (2/3): atividade por horário   · profissão.
+ * Perfil do lead — as respostas do formulário do APL (sql/apl/03_perfil.sql),
+ * em blocos recolhíveis para a página não ficar interminável.
  *
- * O dia da semana fica na ordem natural (domingo→sábado), não por volume:
- * a pergunta aqui é como o lead se distribui ao longo da semana, e reordenar
- * por quantidade destruiria a sequência que dá sentido à leitura. O mesmo vale
- * para o aporte, que é escala. Já a profissão é categoria sem ordem própria —
- * essa ordena por volume, que é o que responde "quem mais chega".
+ * O gráfico segue o TIPO de resposta, não o gosto:
+ *   • dia da semana / hora → barras na ordem natural (domingo→sábado, 0h→23h):
+ *     reordenar por volume destruiria a sequência que dá sentido à leitura.
+ *   • faixas de valor (renda, capital, aporte) → rosca ordinal: a cor escurece
+ *     conforme a faixa sobe, então a fatia se identifica pela cor.
+ *   • opções em frase (profissão, situação, …) → barras horizontais com o texto
+ *     inteiro por cima, ordenadas por volume. Categoria sem ordem própria não
+ *     vai em rosca: a cor teria de distinguir 5+ fatias sem significado.
  */
 
 const DIAS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
-
-/**
- * 'Entre R$ 2.000 e R$ 5.000' → '2–5 mil'.
- * Os rótulos do formulário são frases inteiras e não cabem em volta da rosca.
- * A conversão é por regex, não por tabela fixa: se amanhã entrar uma faixa
- * nova no formulário ela encurta sozinha, e o que não casar cai no texto
- * original em vez de sumir.
- */
-function curtoAporte(r: string): string {
-  const valores = (r.match(/R\$\s*[\d.]+/g) ?? []).map((x) => {
-    const n = Number(x.replace(/[^\d.]/g, '').replace(/\./g, ''))
-    return n >= 1000 ? `${n / 1000} mil` : String(n)
-  })
-  if (valores.length >= 2) return `${valores[0].replace(' mil', '')}–${valores[1]}`
-  if (valores.length === 1) return /acima|mais/i.test(r) ? `${valores[0]}+` : `Até ${valores[0]}`
-  return r
-}
 
 const TOPO = [0xd9, 0x57, 0x0a]
 const BASE = [0xfb, 0xc9, 0x9f]
@@ -58,172 +46,79 @@ function tom(v: number, max: number): string {
 
 const eixoTick = { fill: 'var(--color-muted)', fontSize: 11 }
 
-export function PerfilLead({ linhas }: { linhas: PerfilLinha[] }) {
-  const dias = linhas
-    .filter((l) => l.tipo === 'dia_semana')
-    .sort((a, b) => a.ordem - b.ordem)
-    .map((l) => ({ rotulo: DIAS[l.ordem] ?? '?', leads: Number(l.leads) }))
+/** Respostas de uma pergunta + a base (quem respondeu). */
+function daPergunta(linhas: PerfilLinha[], pergunta: string): { itens: Resposta[]; base: number } {
+  const doTipo = linhas.filter((l) => l.pergunta === pergunta)
+  return {
+    itens: doTipo.map((l) => ({ resposta: l.resposta, leads: Number(l.leads) })),
+    base: Number(doTipo[0]?.respondentes ?? 0),
+  }
+}
 
-  const horas = linhas
-    .filter((l) => l.tipo === 'hora')
-    .sort((a, b) => a.ordem - b.ordem)
-    .map((l) => ({
-      rotulo: `${String(l.ordem).padStart(2, '0')}:00`,
-      leads: Number(l.leads),
+/** Faixas de valor → fatias da rosca, na ordem da escala e com rótulo curto. */
+function faixas(linhas: PerfilLinha[], pergunta: string): RendaLinha[] {
+  const { itens, base } = daPergunta(linhas, pergunta)
+  return itens
+    .map((i) => ({
+      faixa: curtoFaixa(i.resposta),
+      ordem: ordemFaixa(i.resposta),
+      leads: i.leads,
+      pct: base > 0 ? (100 * i.leads) / base : null,
     }))
+    .sort((a, b) => a.ordem - b.ordem)
+}
 
-  const semHora = Number(linhas.find((l) => l.tipo === 'sem_hora')?.leads ?? 0)
-
-  // Aporte: a RPC já devolve na ordem da escala e sem vazios. O percentual é
-  // calculado aqui sobre QUEM RESPONDEU — não sobre o total de leads, senão
-  // as fatias somariam menos de 100% e pareceriam erro de conta.
-  const aporteBruto = linhas.filter((l) => l.tipo === 'aporte').sort((a, b) => a.ordem - b.ordem)
-  const totalAporte = aporteBruto.reduce((s, l) => s + Number(l.leads), 0)
-  const aporte = aporteBruto.map((l) => ({
-    faixa: curtoAporte(l.rotulo ?? '—'),
-    ordem: l.ordem,
-    leads: Number(l.leads),
-    pct: totalAporte > 0 ? (100 * Number(l.leads)) / totalAporte : null,
+export function PerfilLead({ linhas }: { linhas: PerfilLinha[] }) {
+  const dias = DIAS.map((rotulo, i) => ({
+    rotulo,
+    leads: Number(linhas.find((l) => l.pergunta === 'dia_semana' && Number(l.resposta) === i)?.leads ?? 0),
   }))
 
-  const profissoes = linhas
-    .filter((l) => l.tipo === 'profissao')
-    .sort((a, b) => a.ordem - b.ordem)
-    .map((l) => ({ rotulo: l.rotulo ?? '—', leads: Number(l.leads) }))
-
-  const totalProf = profissoes.reduce((s, p) => s + p.leads, 0)
+  const horas = Array.from({ length: 24 }, (_, h) => ({
+    rotulo: `${String(h).padStart(2, '0')}:00`,
+    leads: Number(linhas.find((l) => l.pergunta === 'hora' && Number(l.resposta) === h)?.leads ?? 0),
+  }))
 
   const maxDia = Math.max(1, ...dias.map((d) => d.leads))
   const maxHora = Math.max(1, ...horas.map((h) => h.leads))
-  const maxProf = Math.max(1, ...profissoes.map((p) => p.leads))
+  const totalLeads = dias.reduce((s, d) => s + d.leads, 0)
+
+  const profissao = daPergunta(linhas, 'profissao')
+  const situacao = daPergunta(linhas, 'situacao_atual')
+  const aoLado = daPergunta(linhas, 'quem_ao_lado')
+  const estrutura = daPergunta(linhas, 'construir_estrutura')
+  const busca = daPergunta(linhas, 'o_que_busca')
+  const preocupa = daPergunta(linhas, 'preocupa')
+  const urgencia = daPergunta(linhas, 'urgencia')
 
   return (
     <div className="mt-8">
       <p className="rotulo">Análise</p>
       <h2 className="mt-1 mb-4 text-2xl font-bold tracking-tight text-ink">Perfil do lead</h2>
 
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+      <div className="flex flex-col gap-3">
+        <Sanfona
+          chave="apl-perfil-quando"
+          titulo="Quando chegam"
+          resumo={`${formatInt(totalLeads)} leads no período`}
+          abertaPadrao
+        >
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         {/* ---------- 1/3: dia da semana ---------- */}
-        <Panel className="p-5">
-          <h3 className="titulo mb-4">Leads por dia da semana</h3>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={dias}
-                layout="vertical"
-                margin={{ top: 4, right: 44, left: 4, bottom: 4 }}
-              >
-                <XAxis type="number" hide domain={[0, maxDia]} />
-                <YAxis
-                  type="category"
-                  dataKey="rotulo"
-                  width={68}
-                  tick={eixoTick}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <Tooltip
-                  cursor={{ fill: 'var(--color-card-alt)' }}
-                  {...tooltipProps}
-                  formatter={(v) => [`${formatInt(Number(v))} leads`, '']}
-                />
-                <Bar dataKey="leads" radius={[0, 4, 4, 0]} isAnimationActive={false}>
-                  {dias.map((d, i) => (
-                    <Cell key={i} fill={tom(d.leads, maxDia)} />
-                  ))}
-                  <LabelList
-                    dataKey="leads"
-                    position="right"
-                    formatter={(v) => formatInt(Number(v))}
-                    style={{ fill: 'var(--color-ink)', fontSize: 11, fontWeight: 600 }}
-                  />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Panel>
-
-        {/* ---------- 2/3: horário ---------- */}
-        <Panel className="p-5 lg:col-span-2">
-          <div className="mb-4 flex items-baseline justify-between gap-4">
-            <h3 className="titulo">Atividade por horário</h3>
-            {semHora > 0 && (
-              <span className="text-[11px] text-faint">
-                {formatInt(semHora)} sem horário confiável, fora do gráfico
-              </span>
-            )}
-          </div>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={horas} margin={{ top: 18, right: 8, left: 0, bottom: 4 }}>
-                <CartesianGrid stroke="var(--color-line)" vertical={false} />
-                <XAxis
-                  dataKey="rotulo"
-                  tick={eixoTick}
-                  axisLine={false}
-                  tickLine={false}
-                  interval={0}
-                  angle={-45}
-                  textAnchor="end"
-                  height={52}
-                />
-                <YAxis tick={eixoTick} axisLine={false} tickLine={false} width={40} />
-                <Tooltip
-                  cursor={{ fill: 'var(--color-card-alt)' }}
-                  {...tooltipProps}
-                  formatter={(v) => [`${formatInt(Number(v))} leads`, '']}
-                />
-                <Bar dataKey="leads" radius={[3, 3, 0, 0]} isAnimationActive={false}>
-                  {horas.map((h, i) => (
-                    <Cell key={i} fill={tom(h.leads, maxHora)} />
-                  ))}
-                  <LabelList
-                    dataKey="leads"
-                    position="top"
-                    formatter={(v) => (Number(v) > 0 ? formatInt(Number(v)) : '')}
-                    style={{ fill: 'var(--color-muted)', fontSize: 10 }}
-                  />
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Panel>
-
-        {/* ---------- 1/3: aporte mensal declarado ----------
-            ⚠️ Vem de `disposto_a_investir`, que é o APORTE POR MÊS — não a
-            renda nem a reserva. O rótulo precisa dizer isso: a confusão entre
-            os dois campos já existe na base. */}
-        <RendaDonut linhas={aporte} titulo="Aporte mensal declarado" />
-
-        {/* ---------- 2/3: profissão ---------- */}
-        <Panel className="p-5 lg:col-span-2">
-          <div className="mb-4 flex items-baseline justify-between gap-4">
-            <h3 className="titulo">Profissão</h3>
-            <span className="numero text-xs text-muted">
-              {formatInt(totalProf)} responderam
-            </span>
-          </div>
-          <div className="h-80">
-            {profissoes.length === 0 ? (
-              <p className="flex h-full items-center justify-center text-sm text-faint">
-                Sem profissão informada no período.
-              </p>
-            ) : (
+          <Panel className="p-5">
+            <h3 className="titulo mb-4">Leads por dia da semana</h3>
+            <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                  data={profissoes}
+                  data={dias}
                   layout="vertical"
-                  margin={{ top: 4, right: 52, left: 4, bottom: 4 }}
+                  margin={{ top: 4, right: 44, left: 4, bottom: 4 }}
                 >
-                  {/* ⚠️ `domain` explícito: sem ele o eixo escondido não calcula
-                      escala e as barras saem com largura zero. */}
-                  <XAxis type="number" hide domain={[0, maxProf]} />
+                  <XAxis type="number" hide domain={[0, maxDia]} />
                   <YAxis
                     type="category"
                     dataKey="rotulo"
-                    // 132px: "Servidor Público" é o rótulo mais longo da lista
-                    // e quebrava em duas linhas com menos que isso.
-                    width={132}
+                    width={68}
                     tick={eixoTick}
                     axisLine={false}
                     tickLine={false}
@@ -234,8 +129,8 @@ export function PerfilLead({ linhas }: { linhas: PerfilLinha[] }) {
                     formatter={(v) => [`${formatInt(Number(v))} leads`, '']}
                   />
                   <Bar dataKey="leads" radius={[0, 4, 4, 0]} isAnimationActive={false}>
-                    {profissoes.map((p, i) => (
-                      <Cell key={i} fill={tom(p.leads, maxProf)} />
+                    {dias.map((d, i) => (
+                      <Cell key={i} fill={tom(d.leads, maxDia)} />
                     ))}
                     <LabelList
                       dataKey="leads"
@@ -246,9 +141,83 @@ export function PerfilLead({ linhas }: { linhas: PerfilLinha[] }) {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
-            )}
+            </div>
+          </Panel>
+  
+          {/* ---------- 2/3: horário ---------- */}
+          <Panel className="p-5 lg:col-span-2">
+            <h3 className="titulo mb-4">Atividade por horário</h3>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={horas} margin={{ top: 18, right: 8, left: 0, bottom: 4 }}>
+                  <CartesianGrid stroke="var(--color-line)" vertical={false} />
+                  <XAxis
+                    dataKey="rotulo"
+                    tick={eixoTick}
+                    axisLine={false}
+                    tickLine={false}
+                    interval={0}
+                    angle={-45}
+                    textAnchor="end"
+                    height={52}
+                  />
+                  <YAxis tick={eixoTick} axisLine={false} tickLine={false} width={40} />
+                  <Tooltip
+                    cursor={{ fill: 'var(--color-card-alt)' }}
+                    {...tooltipProps}
+                    formatter={(v) => [`${formatInt(Number(v))} leads`, '']}
+                  />
+                  <Bar dataKey="leads" radius={[3, 3, 0, 0]} isAnimationActive={false}>
+                    {horas.map((h, i) => (
+                      <Cell key={i} fill={tom(h.leads, maxHora)} />
+                    ))}
+                    <LabelList
+                      dataKey="leads"
+                      position="top"
+                      formatter={(v) => (Number(v) > 0 ? formatInt(Number(v)) : '')}
+                      style={{ fill: 'var(--color-muted)', fontSize: 10 }}
+                    />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Panel>
           </div>
-        </Panel>
+        </Sanfona>
+
+        <Sanfona chave="apl-perfil-financeiro" titulo="Financeiro" resumo="renda · capital · aporte">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+            <RendaDonut linhas={faixas(linhas, 'renda')} titulo="Renda" />
+            <RendaDonut linhas={faixas(linhas, 'capital')} titulo="Capital disponível" />
+            <RendaDonut linhas={faixas(linhas, 'aporte')} titulo="Aporte mensal" />
+          </div>
+        </Sanfona>
+
+        <Sanfona chave="apl-perfil-quem" titulo="Quem é" resumo="profissão · momento · decisão">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+            <BarrasRespostas titulo="Profissão" linhas={profissao.itens} base={profissao.base} />
+            <BarrasRespostas titulo="Situação atual" linhas={situacao.itens} base={situacao.base} />
+            <BarrasRespostas titulo="Quem está ao lado na decisão" linhas={aoLado.itens} base={aoLado.base} />
+          </div>
+        </Sanfona>
+
+        <Sanfona chave="apl-perfil-intencao" titulo="Intenção" resumo="o que busca · preocupação · urgência">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <BarrasRespostas
+              titulo="Quer construir uma estrutura patrimonial?"
+              linhas={estrutura.itens}
+              base={estrutura.base}
+            />
+            <BarrasRespostas titulo="Urgência" linhas={urgencia.itens} base={urgencia.base} />
+            <BarrasRespostas
+              titulo="O que busca no Pharus"
+              linhas={busca.itens}
+              base={busca.base}
+              multipla
+            />
+            <BarrasRespostas titulo="O que mais preocupa" linhas={preocupa.itens} base={preocupa.base} />
+          </div>
+        </Sanfona>
       </div>
     </div>
   )

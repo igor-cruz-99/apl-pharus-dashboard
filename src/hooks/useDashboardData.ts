@@ -39,7 +39,7 @@ export function useDashboardData(filtros: Filtros) {
         fetchSerie(filtros.inicio, filtros.fim, filtros.origens),
         fetchTrafego(filtros.inicio, filtros.fim, filtros.origens),
         fetchCiclo(filtros.inicio, filtros.fim, filtros.origens),
-        fetchPerfil(filtros.inicio, filtros.fim, filtros.origens),
+        fetchPerfil(filtros.inicio, filtros.fim),
         fetchMetas(),
       ])
       setDados({ kpis, serie, trafego, ciclo, perfil, metas })

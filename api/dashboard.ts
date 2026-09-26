@@ -35,6 +35,7 @@ const ALLOWED_RPC = new Set([
   'se_formularios',
   'se_macro',
   'se_metas',
+  'apl_perfil',
 ])
 
 interface Req {
