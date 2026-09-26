@@ -191,9 +191,8 @@ export function PerfilLead({ linhas }: { linhas: PerfilLinha[] }) {
 
         {/* ---------- 1/3: aporte mensal declarado ----------
             ⚠️ Vem de `disposto_a_investir`, que é o APORTE POR MÊS — não a
-            renda nem a reserva. O rótulo precisa dizer isso, porque a rosca de
-            faixa de renda fica logo acima na página e a confusão entre os dois
-            campos já existe na base. */}
+            renda nem a reserva. O rótulo precisa dizer isso: a confusão entre
+            os dois campos já existe na base. */}
         <RendaDonut linhas={aporte} titulo="Aporte mensal declarado" />
 
         {/* ---------- 2/3: profissão ---------- */}

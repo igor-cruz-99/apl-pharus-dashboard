@@ -3,13 +3,10 @@ import { DEV_SKIP_AUTH } from './devAuth'
 import type {
   CicloLinha,
   DiaSerie,
-  FormularioLinha,
   Kpis,
   MacroLinha,
   Meta,
-  OrigemLinha,
   PerfilLinha,
-  RendaLinha,
   TrafegoLinha,
 } from '../types'
 
@@ -63,18 +60,6 @@ export async function fetchSerie(
   })
 }
 
-export async function fetchOrigens(inicio: string, fim: string): Promise<OrigemLinha[]> {
-  return chamar<OrigemLinha>('se_origem', { p_ini: inicio, p_fim: fim })
-}
-
-export async function fetchRenda(
-  inicio: string,
-  fim: string,
-  origens: string[] | null,
-): Promise<RendaLinha[]> {
-  return chamar<RendaLinha>('se_renda', { p_ini: inicio, p_fim: fim, p_origens: origens })
-}
-
 export async function fetchTrafego(
   inicio: string,
   fim: string,
@@ -97,18 +82,6 @@ export async function fetchPerfil(
   origens: string[] | null,
 ): Promise<PerfilLinha[]> {
   return chamar<PerfilLinha>('se_perfil_lead', { p_ini: inicio, p_fim: fim, p_origens: origens })
-}
-
-export async function fetchFormularios(
-  inicio: string,
-  fim: string,
-  origens: string[] | null,
-): Promise<FormularioLinha[]> {
-  return chamar<FormularioLinha>('se_formularios', {
-    p_ini: inicio,
-    p_fim: fim,
-    p_origens: origens,
-  })
 }
 
 /**

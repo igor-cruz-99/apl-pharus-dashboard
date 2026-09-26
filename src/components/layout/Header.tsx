@@ -1,5 +1,4 @@
 import type { Filtros } from '../../types'
-import { FiltroOrigens } from './FiltroOrigens'
 import { BotaoImposto } from './BotaoImposto'
 import { paraISO } from '../../utils/format'
 
@@ -57,9 +56,6 @@ export function Header({
   atalho,
   onAtalho,
   onPeriodo,
-  origensDisponiveis,
-  origensDesmarcadas,
-  onOrigens,
   imposto,
   onImposto,
   onSair,
@@ -68,9 +64,6 @@ export function Header({
   atalho: Atalho | null
   onAtalho: (a: Atalho) => void
   onPeriodo: (inicio: string, fim: string) => void
-  origensDisponiveis: string[]
-  origensDesmarcadas: string[]
-  onOrigens: (desmarcadas: string[]) => void
   imposto: boolean
   onImposto: (v: boolean) => void
   onSair: () => void
@@ -85,12 +78,6 @@ export function Header({
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <FiltroOrigens
-          disponiveis={origensDisponiveis}
-          desmarcadas={origensDesmarcadas}
-          onMudar={onOrigens}
-        />
-
         <div className="flex items-center gap-1 rounded-full border border-line bg-card p-1">
           {ATALHOS.map((a) => (
             <button

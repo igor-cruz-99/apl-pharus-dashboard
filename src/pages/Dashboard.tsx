@@ -4,9 +4,6 @@ import { Sidebar, type Secao } from '../components/layout/Sidebar'
 import { KpiCard } from '../components/kpi/KpiCard'
 import { Funnel } from '../components/funnel/Funnel'
 import { ChartCard } from '../components/charts/ChartCard'
-import { OrigemLeadsTable } from '../components/origem/OrigemLeadsTable'
-import { InvestimentoOrigemChart } from '../components/origem/InvestimentoOrigemChart'
-import { RendaDonut } from '../components/origem/RendaDonut'
 import { SecaoTrafego } from '../components/tables/SecaoTrafego'
 import { CicloVendasTable } from '../components/tables/CicloVendasTable'
 import { PerfilLead } from '../components/perfil/PerfilLead'
@@ -27,36 +24,12 @@ import type { Filtros } from '../types'
  */
 const FUNIL_CONFIAVEL_DE = '2026-08-01'
 
-/**
- * Origens que o painel já conhece, usadas para montar o filtro ANTES da
- * primeira resposta do servidor. Sem essa semente, o primeiro pedido sairia
- * com a lista vazia — que o backend leria como "nenhuma origem" e devolveria
- * o painel zerado por um instante.
- * A lista real vem de `fn_origem` e é unida a esta; origem nova nasce marcada.
- */
-const ORIGENS_CONHECIDAS = [
-  'Forms Nativo',
-  'Quiz',
-  'Typeform',
-  'Typebot',
-  'VSL',
-  'Landing Page',
-  'Outros',
-  'Não identificado',
-]
-
-/** O VSL não faz parte do funil principal — nasce desmarcado, por decisão. */
-const DESMARCADAS_PADRAO = ['VSL']
-
 export function Dashboard() {
   // Abre no mês corrente; os atalhos 30D/7D/Ontem/Hoje ficam sem seleção
   // até alguém clicar, porque nenhum deles corresponde a esse recorte.
   const [atalho, setAtalho] = useState<Atalho | null>(null)
-  const [desmarcadas, setDesmarcadas] = useState<string[]>(DESMARCADAS_PADRAO)
-  const [filtros, setFiltros] = useState<Filtros>(() => ({
-    ...mesAtual(),
-    origens: ORIGENS_CONHECIDAS.filter((o) => !DESMARCADAS_PADRAO.includes(o)),
-  }))
+  // Sem filtro de origem no APL: `origens: null` = todas.
+  const [filtros, setFiltros] = useState<Filtros>(() => ({ ...mesAtual(), origens: null }))
 
   // O imposto da Meta nasce LIGADO: o custo real da empresa é 12% acima do que
   // a plataforma cobra, e é esse que o gestor precisa ver por padrão. O
@@ -74,19 +47,7 @@ export function Dashboard() {
     [macroBruto.linhas, imposto],
   )
 
-  const { kpis: k, serie, origens, renda, trafego, ciclo, perfil, formularios, metas } = dados
-
-  // União do que o servidor devolveu com o que já conhecíamos, para o filtro
-  // nunca perder uma opção enquanto os dados não chegam.
-  const listaOrigens = useMemo(() => {
-    const doServidor = origens.map((o) => o.origem).filter(Boolean)
-    return [...new Set([...ORIGENS_CONHECIDAS, ...doServidor])].sort()
-  }, [origens])
-
-  function trocarOrigens(novas: string[]) {
-    setDesmarcadas(novas)
-    setFiltros((f) => ({ ...f, origens: listaOrigens.filter((o) => !novas.includes(o)) }))
-  }
+  const { kpis: k, serie, trafego, ciclo, perfil, metas } = dados
 
   const avisoLacuna = filtros.inicio < FUNIL_CONFIAVEL_DE
 
@@ -114,7 +75,6 @@ export function Dashboard() {
 
   const SECOES: Secao[] = [
     { id: 'sec-visao', titulo: 'Visão geral' },
-    { id: 'sec-origem', titulo: 'Origem e renda' },
     { id: 'sec-trafego', titulo: 'Tráfego por campanha' },
     { id: 'sec-ciclo', titulo: 'Ciclo de vendas' },
     { id: 'sec-perfil', titulo: 'Perfil do lead' },
@@ -143,9 +103,6 @@ export function Dashboard() {
           atalho={atalho}
           onAtalho={aplicarAtalho}
           onPeriodo={aplicarPeriodo}
-          origensDisponiveis={listaOrigens}
-          origensDesmarcadas={desmarcadas}
-          onOrigens={trocarOrigens}
           imposto={imposto}
           onImposto={setImposto}
           onSair={() => supabaseAuth?.auth.signOut()}
@@ -237,13 +194,6 @@ export function Dashboard() {
           </div>
 
           <Funnel k={k} />
-        </div>
-
-        {/* ---------- Origem e qualificação ---------- */}
-        <div id="sec-origem" className="mt-5 grid grid-cols-1 gap-5 scroll-mt-6 lg:grid-cols-2 xl:grid-cols-3">
-          <OrigemLeadsTable linhas={formularios} />
-          <InvestimentoOrigemChart linhas={origens} />
-          <RendaDonut linhas={renda} />
         </div>
 
         {/* ---------- Análise ---------- */}

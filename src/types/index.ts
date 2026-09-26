@@ -50,23 +50,7 @@ export interface DiaSerie {
   faturamento: number
 }
 
-export interface OrigemLinha {
-  origem: string
-  investimento: number
-  leads: number
-  mql: number
-  agendamentos: number
-  calls: number
-  vendas: number
-  faturamento: number
-  cpl: number | null
-  cpmql: number | null
-  cpa: number | null
-  cac: number | null
-  pct_mql: number | null
-  pct_agend: number | null
-}
-
+/** Fatia de rosca ordinal (faixa → leads). Usada pelo aporte no Perfil do lead. */
 export interface RendaLinha {
   faixa: string
   /** piso da faixa em milhares — serve para ordenar (dado ordinal, não volume) */
@@ -136,15 +120,6 @@ export interface MacroLinha {
   sem_registro: number
 }
 
-export interface FormularioLinha {
-  formulario: string
-  leads: number
-  pct: number | null
-  /** ⚠️ rateado do gasto da campanha proporcional aos leads — estimativa */
-  investimento: number
-  cpl: number | null
-}
-
 export interface PerfilLinha {
   /**
    * 'dia_semana' (0=domingo..6=sábado) · 'hora' (0..23) · 'sem_hora'
@@ -176,11 +151,8 @@ export interface Filtros {
 export interface DadosPainel {
   kpis: Kpis | null
   serie: DiaSerie[]
-  origens: OrigemLinha[]
-  renda: RendaLinha[]
   trafego: TrafegoLinha[]
   ciclo: CicloLinha[]
   perfil: PerfilLinha[]
-  formularios: FormularioLinha[]
   metas: Record<string, Meta>
 }

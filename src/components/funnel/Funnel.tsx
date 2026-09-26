@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { Panel } from '../ui/Panel'
 import { formatBRL, formatInt, formatPct } from '../../utils/format'
 import type { Kpis } from '../../types'
@@ -26,6 +27,9 @@ function tom(t: number): string {
   return `rgb(${c[0]},${c[1]},${c[2]})`
 }
 
+/** Raio do canto dos trapézios, em px. */
+const RAIO = 4
+
 interface Etapa {
   nome: string
   valor: string
@@ -36,6 +40,9 @@ interface Junta {
 }
 
 export function Funnel({ k }: { k: Kpis | null }) {
+  // Id único por instância: os degradês do SVG são referenciados por id.
+  const idBase = `funil${useId().replace(/:/g, '')}`
+
   if (!k) {
     return (
       <Panel className="flex h-full flex-col pb-5">
@@ -92,26 +99,54 @@ export function Funnel({ k }: { k: Kpis | null }) {
           <div className="flex-[0.5]" />
         </div>
 
-        {/* os trapézios */}
-        <div className="flex flex-col">
-          {etapas.map((e, i) => (
+        {/* os trapézios
+            ⚠️ SVG, não clip-path: clip-path não arredonda canto. O canto
+            redondo sai do contorno da própria cor com `strokeLinejoin="round"`
+            — o traço de RAIO*2 px engorda o trapézio RAIO px para cada lado e
+            arredonda as quinas. `non-scaling-stroke` mantém o traço em px
+            mesmo com o SVG esticado (preserveAspectRatio="none"); sem ele o
+            canto sairia oval. A folga entre etapas desconta esse engorde. */}
+        <div className="flex flex-col py-1">
+          {etapas.map((e, i) => {
+            const topoEsq = (100 - larguraDe(i)) / 2
+            const baseEsq = (100 - larguraDe(i + 1)) / 2
+            const grad = `${idBase}-${i}`
+            return (
             <div
               key={e.nome}
-              className="flex flex-1 items-center justify-center"
-              style={{
-                clipPath: `polygon(${(100 - larguraDe(i)) / 2}% 0, ${100 - (100 - larguraDe(i)) / 2}% 0, ${100 - (100 - larguraDe(i + 1)) / 2}% 100%, ${(100 - larguraDe(i + 1)) / 2}% 100%)`,
-                background: `linear-gradient(180deg, ${tom(i / total)}, ${tom((i + 1) / total)})`,
-                marginBottom: 2,
-              }}
+              className="relative flex flex-1 items-center justify-center"
+              style={{ marginBottom: RAIO * 2 + 2 }}
             >
-              <div className="px-4 text-center leading-tight">
+              <svg
+                aria-hidden="true"
+                className="absolute inset-0 h-full w-full overflow-visible"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+              >
+                <defs>
+                  <linearGradient id={grad} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor={tom(i / total)} />
+                    <stop offset="1" stopColor={tom((i + 1) / total)} />
+                  </linearGradient>
+                </defs>
+                <polygon
+                  points={`${topoEsq},0 ${100 - topoEsq},0 ${100 - baseEsq},100 ${baseEsq},100`}
+                  fill={`url(#${grad})`}
+                  stroke={`url(#${grad})`}
+                  strokeWidth={RAIO * 2}
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </svg>
+              <div className="relative px-4 text-center leading-tight">
                 <div className="text-[11px] font-bold tracking-[0.14em] text-ink/70 uppercase">
                   {e.nome}
                 </div>
                 <div className="numero text-lg font-extrabold text-ink">{e.valor}</div>
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* custos */}

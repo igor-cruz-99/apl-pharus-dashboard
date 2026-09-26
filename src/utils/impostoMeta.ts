@@ -1,10 +1,8 @@
 import type {
   DadosPainel,
   DiaSerie,
-  FormularioLinha,
   Kpis,
   MacroLinha,
-  OrigemLinha,
   TrafegoLinha,
 } from '../types'
 
@@ -58,11 +56,7 @@ const KPIS: readonly (keyof Kpis)[] = [
   'investimento', 'cpm', 'cpc', 'cpl', 'cpmql', 'cpa', 'ccall', 'cac',
 ]
 const SERIE: readonly (keyof DiaSerie)[] = ['investimento']
-const ORIGEM: readonly (keyof OrigemLinha)[] = [
-  'investimento', 'cpl', 'cpmql', 'cpa', 'cac',
-]
 const TRAFEGO: readonly (keyof TrafegoLinha)[] = ['investimento', 'cpl', 'cac']
-const FORMULARIO: readonly (keyof FormularioLinha)[] = ['investimento', 'cpl']
 const MACRO: readonly (keyof MacroLinha)[] = [
   'investimento', 'cpc', 'cpl', 'cpmql', 'cust_agen', 'cac',
 ]
@@ -81,10 +75,8 @@ export function comImpostoPainel(dados: DadosPainel, ligado: boolean): DadosPain
     ...dados,
     kpis: dados.kpis ? comImpostoKpis(dados.kpis) : null,
     serie: dados.serie.map((l) => escalar(l, SERIE)),
-    origens: dados.origens.map((l) => escalar(l, ORIGEM)),
     trafego: dados.trafego.map((l) => escalar(l, TRAFEGO)),
-    formularios: dados.formularios.map((l) => escalar(l, FORMULARIO)),
-    // renda, perfil e ciclo não têm dinheiro: passam intactos.
+    // perfil e ciclo não têm dinheiro: passam intactos.
   }
 }
 
