@@ -1,4 +1,25 @@
-# Roadmap — Dashboard Sessão Estratégica
+# Roadmap — Dashboard APL · Pharus
+
+## APL · Pharus — estado
+
+- [x] **Tema** creme, laranja e preto (`src/index.css`).
+- [x] **Projeto Vercel** `quarta-vias-projects/apl-pharus-dashboard` criado.
+- [x] **Cadastros** — `apl_pharus.apl_cadastrados` (Anchor) espelhado em
+      `mkt_apl.cadastrados` a cada 30 min (`sql/apl/00`, `01`). A tabela tem
+      RLS: sem a política `fdw_se_leitura` o espelho vem vazio.
+- [x] **Tráfego** — `mkt_apl.ads`, campanhas `ls-APL-CAPTACAO` da conta
+      ALPES 5, a cada 30 min (`sql/apl/02`). Espelho vazio de propósito até a
+      campanha começar a rodar (27/09/2026). Conferir no dia seguinte:
+      `select campanha, min(data), max(data), sum(gasto) from mkt_apl.ads group by 1;`
+- [ ] **Comercial** — de onde vêm agendamentos e vendas do APL, e como
+      separar do SE.
+- [ ] **RPCs `apl_*`** no lugar das `se_*` que o painel chama hoje.
+- [ ] **Variáveis na Vercel** e primeiro deploy.
+
+---
+
+> Abaixo, o roadmap herdado do SE EMP — referência de como a base foi montada.
+
 
 ## Pronto
 
