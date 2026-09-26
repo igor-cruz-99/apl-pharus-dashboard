@@ -14,7 +14,8 @@
 - [ ] **Comercial** — de onde vêm agendamentos e vendas do APL, e como
       separar do SE.
 - [ ] **RPCs `apl_*`** no lugar das `se_*` que o painel chama hoje.
-- [ ] **Variáveis na Vercel** e primeiro deploy.
+- [x] **Primeiro deploy** — <https://apl-pharus-dashboard.vercel.app> (26/09/2026).
+      Ainda mostra os números do SE: as RPCs `apl_*` não existem.
 
 ---
 
@@ -81,8 +82,10 @@ deploy **manual** pela CLI.
 
 - Repositório: `igor-cruz-99/apl-pharus-dashboard` (público). Serve de backup
   e histórico; o deploy não depende dele.
-- Projeto Vercel: `quarta-vias-projects/apl-pharus-dashboard` — **a criar** no
-  primeiro `npx vercel --scope quarta-vias-projects`.
+- Projeto Vercel: `quarta-vias-projects/apl-pharus-dashboard`.
+- URL: <https://apl-pharus-dashboard.vercel.app>
+- No Windows, `npm`/`npx` são bloqueados pela política do PowerShell: usar
+  `npm.cmd` / `npx.cmd`, e um comando por linha (sem `&&`).
 - Variáveis em Production e Preview (mesmas do SE EMP): `SUPABASE_URL`,
   `SUPABASE_SERVICE_ROLE`, `SUPABASE_AUTH_URL`, `SUPABASE_AUTH_ANON_KEY`,
   `VITE_SUPABASE_AUTH_URL`, `VITE_SUPABASE_AUTH_ANON_KEY`,
