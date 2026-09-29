@@ -32,6 +32,7 @@ const ALLOWED_RPC = new Set([
   'apl_perfil',
   'apl_macro',
   'apl_metas',
+  'apl_atualizar',
 ])
 
 interface Req {

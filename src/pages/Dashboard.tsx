@@ -13,6 +13,7 @@ import { Panel } from '../components/ui/Panel'
 import { useDashboardData } from '../hooks/useDashboardData'
 import { useMacro } from '../hooks/useMacro'
 import { supabaseAuth } from '../lib/supabase'
+import { fetchAtualizar } from '../lib/queries'
 import { formatBRL, formatBRLCurto, formatInt, formatPct } from '../utils/format'
 import { comImpostoMacro, comImpostoPainel } from '../utils/impostoMeta'
 import type { Filtros } from '../types'
@@ -29,8 +30,10 @@ export function Dashboard() {
   // desligado existe para conferir contra o gerenciador de anúncios.
   const [imposto, setImposto] = useState(true)
 
-  const { dados: dadosBrutos, carregando, erro } = useDashboardData(filtros)
-  const macroBruto = useMacro(filtros.origens)
+  const { dados: dadosBrutos, carregando, erro, recarregar } = useDashboardData(filtros)
+  // Sobe a cada "Atualizar": faz a matriz buscar de novo junto com o resto.
+  const [versaoMacro, setVersaoMacro] = useState(0)
+  const macroBruto = useMacro(filtros.origens, versaoMacro)
 
   // ⚠️ O ajuste é aplicado DEPOIS da busca, num useMemo: alternar o botão
   // recalcula na hora, sem nova ida ao servidor.
@@ -58,6 +61,14 @@ export function Dashboard() {
 
   function trocarOrigem(o: Origem | null) {
     setFiltros((f) => ({ ...f, origens: o ? [o] : null }))
+  }
+
+  /** Reprocessa no banco e, com as cópias novas, recarrega tudo da tela. */
+  async function atualizar() {
+    const r = await fetchAtualizar()
+    await recarregar()
+    setVersaoMacro((v) => v + 1)
+    return r
   }
 
   function aplicarAtalho(a: Atalho) {
@@ -104,6 +115,7 @@ export function Dashboard() {
           onOrigem={trocarOrigem}
           imposto={imposto}
           onImposto={setImposto}
+          onAtualizar={atualizar}
           onSair={() => supabaseAuth?.auth.signOut()}
         />
 

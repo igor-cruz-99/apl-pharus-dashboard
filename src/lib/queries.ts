@@ -82,3 +82,12 @@ export async function fetchMetas(): Promise<Record<string, Meta>> {
     return {}
   }
 }
+
+/**
+ * Refaz na hora as cópias do banco (sql/apl/09_atualizar.sql). Tem trava de
+ * 2 minutos no servidor: `reprocessou` false = já estava fresco, nada rodou.
+ */
+export async function fetchAtualizar(): Promise<{ atualizado_em: string; reprocessou: boolean } | null> {
+  const linhas = await chamar<{ atualizado_em: string; reprocessou: boolean }>('apl_atualizar')
+  return linhas[0] ?? null
+}

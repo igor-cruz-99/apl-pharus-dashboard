@@ -10,7 +10,7 @@ import type { MacroLinha } from '../types'
  * junto com o resto, refaria a consulta a cada troca de período — 12 chamadas
  * ao fn_kpis — para devolver exatamente o mesmo resultado.
  */
-export function useMacro(origens: string[] | null) {
+export function useMacro(origens: string[] | null, versao = 0) {
   const [linhas, setLinhas] = useState<MacroLinha[]>([])
   const [carregando, setCarregando] = useState(true)
 
@@ -31,7 +31,7 @@ export function useMacro(origens: string[] | null) {
     return () => {
       ativo = false
     }
-  }, [origens])
+  }, [origens, versao])
 
   return { linhas, carregando }
 }
