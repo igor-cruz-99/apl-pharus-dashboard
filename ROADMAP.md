@@ -16,6 +16,10 @@
       (agendamentos) e `contratos_pharus` (vendas assinadas, fora do modo
       teste). Só conta o que aconteceu no dia do cadastro ou depois.
 - [x] **RPCs `apl_*`** (kpis, série, tráfego, ciclo, macro, metas, perfil).
+- [x] **Origem Typeform × Forms Nativo** (`sql/apl/05`–`08d`): coluna `origem`
+      do cadastro (vazio = Typeform) e, no tráfego, campanha com "FORMS NATIVO"
+      no nome = Forms Nativo. Seletor no centro do cabeçalho filtra o painel
+      inteiro, matriz inclusive.
 - [ ] **Confirmar com o gestor**: MQL (hoje renda ≥ R$ 20 mil, igual ao SE) e
       valor da venda (hoje à vista; se vazio, parcelado). Mudam em
       `mkt_apl.eh_mql()` e em `mkt_apl.vw_vendas`.
