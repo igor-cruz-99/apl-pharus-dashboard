@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Header, mesAtual, periodoDoAtalho, type Atalho } from '../components/layout/Header'
 import { Sidebar, type Secao } from '../components/layout/Sidebar'
+import type { Origem } from '../components/layout/FiltroOrigem'
 import { KpiCard } from '../components/kpi/KpiCard'
 import { Funnel } from '../components/funnel/Funnel'
 import { ChartCard } from '../components/charts/ChartCard'
@@ -20,7 +21,7 @@ export function Dashboard() {
   // Abre no mês corrente; os atalhos 30D/7D/Ontem/Hoje ficam sem seleção
   // até alguém clicar, porque nenhum deles corresponde a esse recorte.
   const [atalho, setAtalho] = useState<Atalho | null>(null)
-  // Sem filtro de origem no APL: `origens: null` = todas.
+  // Origem: null = todas; o seletor do cabeçalho troca por [Typeform] ou [Forms Nativo].
   const [filtros, setFiltros] = useState<Filtros>(() => ({ ...mesAtual(), origens: null }))
 
   // O imposto da Meta nasce LIGADO: o custo real da empresa é 12% acima do que
@@ -29,7 +30,7 @@ export function Dashboard() {
   const [imposto, setImposto] = useState(true)
 
   const { dados: dadosBrutos, carregando, erro } = useDashboardData(filtros)
-  const macroBruto = useMacro()
+  const macroBruto = useMacro(filtros.origens)
 
   // ⚠️ O ajuste é aplicado DEPOIS da busca, num useMemo: alternar o botão
   // recalcula na hora, sem nova ida ao servidor.
@@ -51,6 +52,12 @@ export function Dashboard() {
     setFiltros((f) =>
       f.inicio === iso && f.fim === iso ? { ...f, ...mesAtual() } : { ...f, inicio: iso, fim: iso },
     )
+  }
+
+  const origem = (filtros.origens?.[0] as Origem | undefined) ?? null
+
+  function trocarOrigem(o: Origem | null) {
+    setFiltros((f) => ({ ...f, origens: o ? [o] : null }))
   }
 
   function aplicarAtalho(a: Atalho) {
@@ -93,6 +100,8 @@ export function Dashboard() {
           atalho={atalho}
           onAtalho={aplicarAtalho}
           onPeriodo={aplicarPeriodo}
+          origem={origem}
+          onOrigem={trocarOrigem}
           imposto={imposto}
           onImposto={setImposto}
           onSair={() => supabaseAuth?.auth.signOut()}

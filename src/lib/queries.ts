@@ -36,37 +36,38 @@ async function chamar<T>(fn: string, params: Record<string, unknown> = {}): Prom
 }
 
 /**
- * Todas as leituras são das funções do APL (sql/apl/04_funil.sql), que devolvem
- * o mesmo formato das do SE. Só recebem período: o APL não tem filtro de origem.
+ * Todas as leituras são das funções do APL (sql/apl/04 e 08), que devolvem o
+ * mesmo formato das do SE. `origens` null = todas (Typeform + Forms Nativo).
  */
-export async function fetchKpis(inicio: string, fim: string): Promise<Kpis | null> {
-  const linhas = await chamar<Kpis>('apl_kpis', { p_ini: inicio, p_fim: fim })
+type Origens = string[] | null
+export async function fetchKpis(inicio: string, fim: string, origens: Origens): Promise<Kpis | null> {
+  const linhas = await chamar<Kpis>('apl_kpis', { p_ini: inicio, p_fim: fim, p_origens: origens })
   return linhas[0] ?? null
 }
 
-export async function fetchSerie(inicio: string, fim: string): Promise<DiaSerie[]> {
-  return chamar<DiaSerie>('apl_serie_diaria', { p_ini: inicio, p_fim: fim })
+export async function fetchSerie(inicio: string, fim: string, origens: Origens): Promise<DiaSerie[]> {
+  return chamar<DiaSerie>('apl_serie_diaria', { p_ini: inicio, p_fim: fim, p_origens: origens })
 }
 
-export async function fetchTrafego(inicio: string, fim: string): Promise<TrafegoLinha[]> {
-  return chamar<TrafegoLinha>('apl_trafego', { p_ini: inicio, p_fim: fim })
+export async function fetchTrafego(inicio: string, fim: string, origens: Origens): Promise<TrafegoLinha[]> {
+  return chamar<TrafegoLinha>('apl_trafego', { p_ini: inicio, p_fim: fim, p_origens: origens })
 }
 
-export async function fetchCiclo(inicio: string, fim: string): Promise<CicloLinha[]> {
-  return chamar<CicloLinha>('apl_ciclo_vendas', { p_ini: inicio, p_fim: fim })
+export async function fetchCiclo(inicio: string, fim: string, origens: Origens): Promise<CicloLinha[]> {
+  return chamar<CicloLinha>('apl_ciclo_vendas', { p_ini: inicio, p_fim: fim, p_origens: origens })
 }
 
-/** Respostas do formulário do APL — sql/apl/03_perfil.sql. Sem filtro de origem. */
-export async function fetchPerfil(inicio: string, fim: string): Promise<PerfilLinha[]> {
-  return chamar<PerfilLinha>('apl_perfil', { p_ini: inicio, p_fim: fim })
+/** Respostas do formulário do APL — sql/apl/03_perfil.sql (filtro de origem no 08c). */
+export async function fetchPerfil(inicio: string, fim: string, origens: Origens): Promise<PerfilLinha[]> {
+  return chamar<PerfilLinha>('apl_perfil', { p_ini: inicio, p_fim: fim, p_origens: origens })
 }
 
 /**
  * A matriz macro NÃO recebe período: mostra sempre o ano corrente,
  * independente do filtro da página. Ver mkt_apl.fn_macro (sql/apl/04).
  */
-export async function fetchMacro(): Promise<MacroLinha[]> {
-  return chamar<MacroLinha>('apl_macro', {})
+export async function fetchMacro(origens: Origens): Promise<MacroLinha[]> {
+  return chamar<MacroLinha>('apl_macro', { p_origens: origens })
 }
 
 /**

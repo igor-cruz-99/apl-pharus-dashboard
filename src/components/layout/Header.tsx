@@ -1,5 +1,6 @@
 import type { Filtros } from '../../types'
 import { BotaoImposto } from './BotaoImposto'
+import { FiltroOrigem, type Origem } from './FiltroOrigem'
 import { paraISO } from '../../utils/format'
 
 /** Atalhos de período pedidos no escopo: 30D · 7D · Ontem · Hoje. */
@@ -56,6 +57,8 @@ export function Header({
   atalho,
   onAtalho,
   onPeriodo,
+  origem,
+  onOrigem,
   imposto,
   onImposto,
   onSair,
@@ -64,12 +67,17 @@ export function Header({
   atalho: Atalho | null
   onAtalho: (a: Atalho) => void
   onPeriodo: (inicio: string, fim: string) => void
+  origem: Origem | null
+  onOrigem: (o: Origem | null) => void
   imposto: boolean
   onImposto: (v: boolean) => void
   onSair: () => void
 }) {
   return (
-    <header className="flex flex-wrap items-end justify-between gap-4 px-1 pt-2 pb-6">
+    // Três colunas em tela larga: título | origem no centro | controles. As
+    // laterais têm o mesmo peso (1fr), senão o "centro" escorrega para o lado
+    // do bloco mais estreito. Em tela menor, tudo empilha.
+    <header className="grid grid-cols-1 items-end gap-4 px-1 pt-2 pb-6 2xl:grid-cols-[1fr_auto_1fr]">
       <div>
         <p className="rotulo">Performance</p>
         <h1 className="mt-1 text-3xl font-bold tracking-tight text-ink">
@@ -77,7 +85,11 @@ export function Header({
         </h1>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex justify-center">
+        <FiltroOrigem valor={origem} onMudar={onOrigem} />
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3 2xl:justify-end">
         <div className="flex items-center gap-1 rounded-full border border-line bg-card p-1">
           {ATALHOS.map((a) => (
             <button
