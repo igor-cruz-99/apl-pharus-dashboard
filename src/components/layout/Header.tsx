@@ -2,6 +2,8 @@ import type { Filtros } from '../../types'
 import { BotaoImposto } from './BotaoImposto'
 import { FiltroOrigem, type Origem } from './FiltroOrigem'
 import { BotaoAtualizar } from './BotaoAtualizar'
+import { BotaoCaptura } from './BotaoCaptura'
+import type { RefObject } from 'react'
 import { paraISO } from '../../utils/format'
 
 /** Atalhos de período pedidos no escopo: 30D · 7D · Ontem · Hoje. */
@@ -63,6 +65,7 @@ export function Header({
   imposto,
   onImposto,
   onAtualizar,
+  alvoCaptura,
   onSair,
 }: {
   filtros: Filtros
@@ -74,6 +77,7 @@ export function Header({
   imposto: boolean
   onImposto: (v: boolean) => void
   onAtualizar: () => Promise<{ atualizado_em: string; reprocessou: boolean } | null>
+  alvoCaptura: RefObject<HTMLElement | null>
   onSair: () => void
 }) {
   return (
@@ -126,6 +130,8 @@ export function Header({
         <BotaoImposto ligado={imposto} onMudar={onImposto} />
 
         <BotaoAtualizar onAtualizar={onAtualizar} />
+
+        <BotaoCaptura alvo={alvoCaptura} />
 
         <button
           onClick={onSair}

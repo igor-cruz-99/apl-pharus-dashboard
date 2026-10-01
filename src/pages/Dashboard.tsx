@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Header, mesAtual, periodoDoAtalho, type Atalho } from '../components/layout/Header'
 import { Sidebar, type Secao } from '../components/layout/Sidebar'
 import type { Origem } from '../components/layout/FiltroOrigem'
@@ -33,6 +33,8 @@ export function Dashboard() {
   const { dados: dadosBrutos, carregando, erro, recarregar } = useDashboardData(filtros)
   // Sobe a cada "Atualizar": faz a matriz buscar de novo junto com o resto.
   const [versaoMacro, setVersaoMacro] = useState(0)
+  // A página inteira — é o que o botão IMAGEM fotografa.
+  const paginaRef = useRef<HTMLDivElement>(null)
   const macroBruto = useMacro(filtros.origens, versaoMacro)
 
   // ⚠️ O ajuste é aplicado DEPOIS da busca, num useMemo: alternar o botão
@@ -104,7 +106,7 @@ export function Dashboard() {
   const baseFracaComparecimento = coberturaDesfecho < 0.3
 
   return (
-    <div className="fundo-grid min-h-screen">
+    <div ref={paginaRef} className="fundo-grid min-h-screen">
       <div className="mx-auto max-w-[1760px] px-6 py-4">
         <Header
           filtros={filtros}
@@ -116,6 +118,7 @@ export function Dashboard() {
           imposto={imposto}
           onImposto={setImposto}
           onAtualizar={atualizar}
+          alvoCaptura={paginaRef}
           onSair={() => supabaseAuth?.auth.signOut()}
         />
 
