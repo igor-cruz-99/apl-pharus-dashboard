@@ -126,6 +126,15 @@ não aparecer na lista, **Adjust GitHub App Permissions** e incluir o repo.
 
 ## Armadilhas já encontradas (não repetir)
 
+- **Schema inexistente em "Exposed schemas" derruba a API inteira do Business
+  Data.** Em 03/10/2026 15:00 alguém adicionou `match-ep-pharus` (que não
+  existia) em Project Settings → Data API → Exposed schemas. O PostgREST passou
+  a falhar ao montar o schema cache (Postgres: `3F000 schema "..." does not
+  exist`; API: `503 PGRST002 Could not query the database for the schema
+  cache`), derrubando APL, SE e tudo que usa o REST do projeto por ~12 h, com o
+  banco "Healthy". Diagnóstico: Logs → Log Type Postgres → Level Error.
+  Correção: tirar o schema da lista (ou criá-lo ANTES de expor).
+
 - **`join ... using (k)` descarta linha com chave NULA** — em SQL, `null = null`
   não é verdadeiro. Isso escondeu uma venda inteira da tabela de tráfego, sem
   erro nenhum. Sempre normalizar a chave para um rótulo antes de agrupar.
